@@ -22,9 +22,9 @@ type AgentService interface {
 	DeleteAgent(context.Context, string) (*Agent, *Response, error)
 	UpdateAgentVisibility(context.Context, string, *AgentVisibilityUpdateRequest) (*Agent, *Response, error)
 	ListModels(context.Context, *ListOptions) ([]*Model, *Response, error)
-	AddAgentRoute(context.Context, string, string, *AgentRouteCreateRequest) (*genAIAgentRouteRoot, *Response, error)
-	UpdateAgentRoute(context.Context, string, string, *AgentRouteUpdateRequest) (*genAIAgentRouteRoot, *Response, error)
-	DeleteAgentRoute(context.Context, string, string) (*genAIAgentRouteRoot, *Response, error)
+	AddAgentRoute(context.Context, string, string, *AgentRouteCreateRequest) (*AgentRouteResponse, *Response, error)
+	UpdateAgentRoute(context.Context, string, string, *AgentRouteUpdateRequest) (*AgentRouteResponse, *Response, error)
+	DeleteAgentRoute(context.Context, string, string) (*AgentRouteResponse, *Response, error)
 }
 
 var _ AgentService = &AgentServiceOp{}
@@ -44,7 +44,7 @@ type genAIAgentRoot struct {
 	Agent *Agent `json:"agent"`
 }
 
-type genAIAgentRouteRoot struct {
+type AgentRouteResponse struct {
 	ChildAgentUuid  string `json:"child_agent_uuid,omitempty"`
 	ParentAgentUuid string `json:"parent_agent_uuid,omitempty"`
 	Rollback        bool   `json:"rollback,omitempty"`
@@ -322,14 +322,6 @@ type AgentRouteUpdateRequest struct {
 	UUID            string `json:"uuid,omitempty"`
 }
 
-// AgentRoute represents the route information between a parent and child agent.
-type AgentRoute struct {
-	ChildAgentUuid  string `json:"child_agent_uuid,omitempty"`
-	ParentAgentUuid string `json:"parent_agent_uuid,omitempty"`
-	Rollback        bool   `json:"rollback,omitempty"`
-	UUID            string `json:"uuid,omitempty"`
-}
-
 // List returns a list of Gen AI Agents
 func (s *AgentServiceOp) ListAgents(ctx context.Context, opt *ListOptions) ([]*Agent, *Response, error) {
 	path, err := addOptions(agentConnectBasePath, opt)
@@ -482,7 +474,7 @@ func (s *AgentServiceOp) ListModels(ctx context.Context, opt *ListOptions) ([]*M
 }
 
 // AddAgentRoute function adds a route between a parent and child agent.
-func (s *AgentServiceOp) AddAgentRoute(ctx context.Context, parentId string, childId string, route *AgentRouteCreateRequest) (*genAIAgentRouteRoot, *Response, error) {
+func (s *AgentServiceOp) AddAgentRoute(ctx context.Context, parentId string, childId string, route *AgentRouteCreateRequest) (*AgentRouteResponse, *Response, error) {
 	path := fmt.Sprintf("%s/%s/child_agents/%s", agentConnectBasePath, parentId, childId)
 	fmt.Println(path)
 	req, err := s.client.NewRequest(ctx, http.MethodPost, path, route)
@@ -490,7 +482,7 @@ func (s *AgentServiceOp) AddAgentRoute(ctx context.Context, parentId string, chi
 		return nil, nil, err
 	}
 
-	root := new(genAIAgentRouteRoot)
+	root := new(AgentRouteResponse)
 	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
@@ -500,14 +492,14 @@ func (s *AgentServiceOp) AddAgentRoute(ctx context.Context, parentId string, chi
 }
 
 // UpdateAgentRoute function updates a route between a parent and child agent.
-func (s *AgentServiceOp) UpdateAgentRoute(ctx context.Context, parentId string, childId string, route *AgentRouteUpdateRequest) (*genAIAgentRouteRoot, *Response, error) {
+func (s *AgentServiceOp) UpdateAgentRoute(ctx context.Context, parentId string, childId string, route *AgentRouteUpdateRequest) (*AgentRouteResponse, *Response, error) {
 	path := fmt.Sprintf("%s/%s/child_agents/%s", agentConnectBasePath, parentId, childId)
 	req, err := s.client.NewRequest(ctx, http.MethodPut, path, route)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	root := new(genAIAgentRouteRoot)
+	root := new(AgentRouteResponse)
 	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
@@ -517,7 +509,7 @@ func (s *AgentServiceOp) UpdateAgentRoute(ctx context.Context, parentId string, 
 }
 
 // DeleteAgentRoute function deletes a route between a parent and child agent.
-func (s *AgentServiceOp) DeleteAgentRoute(ctx context.Context, parentId string, childId string) (*genAIAgentRouteRoot, *Response, error) {
+func (s *AgentServiceOp) DeleteAgentRoute(ctx context.Context, parentId string, childId string) (*AgentRouteResponse, *Response, error) {
 	path := fmt.Sprintf("%s/%s/child_agents/%s", agentConnectBasePath, parentId, childId)
 	fmt.Println(path)
 	req, err := s.client.NewRequest(ctx, http.MethodDelete, path, nil)
@@ -525,7 +517,7 @@ func (s *AgentServiceOp) DeleteAgentRoute(ctx context.Context, parentId string, 
 		return nil, nil, err
 	}
 
-	root := new(genAIAgentRouteRoot)
+	root := new(AgentRouteResponse)
 	resp, err := s.client.Do(ctx, req, root)
 	if err != nil {
 		return nil, resp, err
@@ -542,6 +534,6 @@ func (m Model) String() string {
 	return Stringify(m)
 }
 
-func (a genAIAgentRouteRoot) String() string {
+func (a AgentRouteResponse) String() string {
 	return Stringify(a)
 }
