@@ -1,5 +1,8 @@
 # Change Log
 
+## [1.193.0] - 2026-05-29
+- @anup-deka - Test Change
+
 ## [1.193.0] - 2026-05-26
 
 - #1015 - @nbhoot157 - Add VectorDBs service for vector database API support
